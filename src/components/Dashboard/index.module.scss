@@ -1,0 +1,23 @@
+.Card {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  transition: transform 0.2s;
+  margin: 10px;
+
+  .img {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    transition: transform 0.2s;
+    margin: 10px;
+  }
+  .img:hover {
+    -webkit-transform: scale(1.03);
+    transform: scale(1.03);
+  }
+}
+.Avatar {
+  align-items: center;
+  justify-content: center;
+}

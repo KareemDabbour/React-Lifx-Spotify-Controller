@@ -1,0 +1,12 @@
+.Header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  background-color: black;
+  //   align-items: center;
+  justify-content: center;
+  .title {
+    color: white;
+  }
+}
