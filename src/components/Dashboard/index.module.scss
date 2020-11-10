@@ -4,7 +4,14 @@
   justify-content: center;
   transition: transform 0.2s;
   margin: 10px;
-
+  .Avatar {
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: auto;
+    max-width: 120px;
+    max-height: 120px;
+  }
   .img {
     display: flex;
     flex-wrap: wrap;
@@ -13,11 +20,6 @@
     margin: 10px;
   }
   .img:hover {
-    -webkit-transform: scale(1.03);
     transform: scale(1.03);
   }
-}
-.Avatar {
-  align-items: center;
-  justify-content: center;
 }

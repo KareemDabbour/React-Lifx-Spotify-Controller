@@ -1,20 +1,40 @@
 import React from "react";
-// import { Avatar, Collapse } from "antd";
-// import { BulbOutlined } from "@ant-design/icons";
-
-// const { Panel } = Collapse;
-
-const Lights = (lightsArr) => {
-  //   const lights = lightsArr.lights;
+import { Avatar, Card, Collapse } from "antd";
+import { BulbFilled } from "@ant-design/icons";
+import styles from "./index.module.scss";
+import "antd/dist/antd.css";
+const { Meta } = Card;
+const { Panel } = Collapse;
+const Lights = ({ lightsArr }) => {
+  console.log(lightsArr);
   return (
     <div>
-      {/* <Collapse>
-        <Panel header="Lights Found:">
-          {lights.map((light) => (
-            <Avatar icon={BulbOutlined} />
+      <Collapse bordered={false}>
+        {/* <label className={styles.Card}>Lights Found:</label> */}
+        <Panel
+          className={styles.Panel}
+          header={`Lights found: ${lightsArr.length}`}
+        >
+          {lightsArr.map((item) => (
+            <Card
+              key={item?.id}
+              bordered={false}
+              className={styles.Card}
+              style={{ backgroundColor: "transparent" }}
+            >
+              <Meta
+                avatar={
+                  <Avatar
+                    className={styles.Avatar}
+                    icon={<BulbFilled style={{ color: "yellow" }} />}
+                  />
+                }
+                title={`${item?.label}`}
+              />
+            </Card>
           ))}
         </Panel>
-      </Collapse> */}
+      </Collapse>
     </div>
   );
 };

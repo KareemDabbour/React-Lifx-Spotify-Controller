@@ -1,0 +1,14 @@
+.Panel {
+  background-color: grey;
+  .Card {
+    display: flex;
+    flex-wrap: wrap;
+    transition: transform 0.2s;
+    margin: 10px;
+    .Avatar {
+      align-items: center;
+      justify-content: center;
+      background: black;
+    }
+  }
+}
