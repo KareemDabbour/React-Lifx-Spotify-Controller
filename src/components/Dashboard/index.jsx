@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Header/index";
 import Lights from "../Lights/index";
-import { get, get_lifx } from "../../utils/api";
-import { Card, Avatar, Image } from "antd";
+import { get, get_lifx, post_lifx } from "../../utils/api";
+import { Card, Avatar } from "antd";
+import { usePalette } from "react-palette";
 import styles from "./index.module.scss";
 import "antd/dist/antd.css";
 
 const { Meta } = Card;
 
 const Dashboard = () => {
+  const [user, setUser] = useState("");
   const [imgUrl, setImgUrl] = useState("");
   const [trackUrl, setTrackUrl] = useState("");
   const [trackName, setTrackName] = useState("");
@@ -17,89 +19,158 @@ const Dashboard = () => {
   const [lights, setLights] = useState([]);
 
   const getTest = async () => {
-    const data = await get("/me/player/currently-playing?market=ES");
-    // console.log(data);
-    if (data) {
-      if (imgUrl !== data.item.album.images[0].url) {
-        setImgUrl(data.item.album.images[0].url);
-        setTrackUrl(data.item.uri);
-        getTrackInfo(data.item.id);
+    const allData = await get("/me/player/currently-playing?market=ES");
+    if (allData) {
+      if (imgUrl !== allData?.item.album.images[0].url) {
+        setImgUrl(allData.item.album.images[0].url);
+
+        setTrackUrl(allData.item.uri);
+        getTrackInfo(allData.item.id);
       }
     }
-    return data;
+    return allData;
   };
 
+  const { data } = usePalette(imgUrl);
+
   const getTrackInfo = async (id) => {
-    const data = await get(`/tracks/${id}`);
-    // console.log(data);
-    if (data) {
-      setTrackName(data.name);
-      getArtistInfo(data.artists[0].id);
+    const trackData = await get(`/tracks/${id}`);
+    if (trackData && trackData?.name !== trackName) {
+      setTrackName(trackData.name);
+      getArtistInfo(trackData.artists[0].id);
     }
-    return data;
+    return trackData;
   };
   const getArtistInfo = async (id) => {
-    const data = await get(`/artists/${id}`);
-    if (data) {
-      //   console.log(data.images[0].url);
-      setAvUrl(data.images[data.images.length - 1].url);
-      //   console.log(typeof data);
-      setArtist(data);
+    const artistData = await get(`/artists/${id}`);
+    if (artistData) {
+      setAvUrl(artistData?.images[0].url);
+      setArtist(artistData);
     }
   };
   const getLights = async () => {
-    const data = await get_lifx("/lights/all");
-    console.log(data);
+    const lightData = await get_lifx("/lights/all");
     const dataArr = [];
-
-    data.forEach((element, index) => {
-      console.log(index);
-      dataArr.push({
-        label: element?.product.name,
-        id: element?.id,
+    if (lightData !== null) {
+      lightData?.forEach((element) => {
+        dataArr.push({
+          label: element?.product.name,
+          id: element?.id,
+          isOn: element?.power,
+        });
       });
-    });
-    setLights(dataArr);
+      setLights(dataArr);
+    }
   };
 
-  const lightEffect = async () => {};
+  const getUser = async () => {
+    const userData = await get(`/me`);
+
+    setUser({
+      image: userData?.images[0].url,
+      name: userData?.display_name,
+      url: userData?.external_urls.spotify,
+    });
+  };
+
+  //TODO
+  const lightEffect = async () => {
+    const d = {
+      color: "#ff0000",
+      period: 0.5,
+      cycles: 5,
+      persist: true,
+      power_on: false,
+      peak: 1,
+    };
+    await post_lifx("/all/effects/breathe", d);
+  };
+  const toggle = async (id) => {
+    await post_lifx(`/id:${id}/toggle`);
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      lightEffect();
+      getTest();
+      getLights();
+    }, 2500);
+
+    return () => clearInterval(interval);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackName]);
 
   useEffect(() => {
     getTest();
     getLights();
-    const interval = setInterval(() => {
-      getTest();
-    }, 5000);
-
-    return () => clearInterval(interval);
+    getUser();
+    lightEffect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  document.body.style.backgroundColor = data.darkMuted;
 
   return (
     <>
-      <Header />
+      <Header userImg={user?.image} userName={user?.name} userUrl={user?.url} />
       <div>
-        <Card
-          bordered={false}
-          className={styles.Card}
-          style={{ backgroundColor: "transparent" }}
-          cover={
-            <img
-              className={styles.img}
-              hoverable="true"
-              src={imgUrl}
-              alt=""
-              onClick={() => window.open(trackUrl)}
+        {artist?.name ? (
+          <Card
+            bordered={false}
+            className={styles.Card}
+            style={{ backgroundColor: data.vibrant }}
+            cover={
+              <img
+                className={styles.img}
+                hoverable="true"
+                src={imgUrl}
+                alt=""
+                onClick={() => window.open(trackUrl)}
+              />
+            }
+          >
+            <Meta
+              avatar={<Avatar className={styles.Avatar} src={avUrl} />}
+              title={
+                <label style={{ color: data.darkMuted }}>
+                  {`Artist: ${artist?.name}`}
+                </label>
+              }
+              description={
+                <label style={{ color: data.darkMuted }}>
+                  {`Now Playing: ${trackName}`}
+                </label>
+              }
+              style={{ backgroundColor: data.vibrant }}
             />
-          }
-        >
-          <Meta
-            avatar={<Avatar className={styles.Avatar} src={avUrl} />}
-            title={`Artist: ${artist?.name}`}
-            description={`Now Playing: ${trackName}`}
-          />
-        </Card>
-        <Lights lightsArr={lights}></Lights>
+          </Card>
+        ) : (
+          <Card
+            bordered={false}
+            className={styles.Card}
+            style={{ backgroundColor: "#7f7f7f" }}
+          >
+            <Meta
+              title={
+                <label style={{ color: "#444444" }}>
+                  Nothing is being played :/
+                </label>
+              }
+              description={
+                <label style={{ color: "#444444" }}>
+                  Play something on Spotify to get started!
+                </label>
+              }
+              style={{ backgroundColor: "#7f7f7f" }}
+            />
+          </Card>
+        )}
+        <Lights
+          lightsArr={lights}
+          onToggle={toggle}
+          darkMute={data?.darkMuted || "#444444"}
+          lightMute={data?.lightVibrant || "#bcbcbc"}
+        ></Lights>
       </div>
     </>
   );

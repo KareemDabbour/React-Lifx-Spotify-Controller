@@ -15,13 +15,24 @@ const RedirectPage = () => {
       //   const access_token = getParamUrl(window.location.hash);
       const code = getCodeUrl(window.location.href);
 
-      const data = getTokens(code);
-      console.log(data);
-      // TODO hanble the tokens and redirect to dashboard
-      //   const expiryTime = new Date().getTime() + access_token.expires_in * 1000;
-      //   localStorage.setItem("params", JSON.stringify(access_token));
-      //   localStorage.setItem("expiry_time", expiryTime);
-      //   history.push("/dashboard");
+      getTokens(code)
+        .then((data) => {
+          console.log(data);
+          if (data) {
+            localStorage.setItem(
+              "tokens",
+              JSON.stringify({
+                access_token: data?.access_token,
+                refresh_token: data?.refresh_token,
+              })
+            );
+            history.push("/dashboard");
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          history.push("/");
+        });
     } catch (error) {
       history.push("/");
     }

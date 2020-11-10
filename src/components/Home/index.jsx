@@ -10,13 +10,15 @@ const Home = (props) => {
   } = process.env;
   const SCOPE = "user-read-private user-read-currently-playing";
   const handleLogin = () => {
-    window.location = `${REACT_APP_AUTH_URL}?client_id=${REACT_APP_CLIENT_ID}&show_dialog=true&redirect_uri=${REACT_APP_REDIRECT_URL}&response_type=code&scope=${SCOPE}`;
+    window.location = `${REACT_APP_AUTH_URL}?client_id=${REACT_APP_CLIENT_ID}&redirect_uri=${REACT_APP_REDIRECT_URL}&response_type=code&scope=${SCOPE}`;
   };
   console.log(REACT_APP_CLIENT_SECRET);
   return (
     <div className="login">
       <Header />
-      <Button onClick={handleLogin}>Login to spotify</Button>
+      <Button type="primary" onClick={handleLogin}>
+        Login to spotify
+      </Button>
     </div>
   );
 };
