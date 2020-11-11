@@ -1,10 +1,8 @@
 import { useEffect } from "react";
-import _ from "lodash";
 import { getTokens } from "../utils/api";
 import { useHistory } from "react-router-dom";
 
 const RedirectPage = () => {
-  //   const { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } = process.env;
   const history = useHistory();
 
   const getCodeUrl = (url) => {
@@ -12,9 +10,7 @@ const RedirectPage = () => {
   };
   useEffect(() => {
     try {
-      //   const access_token = getParamUrl(window.location.hash);
       const code = getCodeUrl(window.location.href);
-
       getTokens(code)
         .then((data) => {
           console.log(data);

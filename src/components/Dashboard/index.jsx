@@ -6,6 +6,7 @@ import { Card, Avatar } from "antd";
 import { usePalette } from "react-palette";
 import styles from "./index.module.scss";
 import "antd/dist/antd.css";
+import { flatMap } from "lodash";
 
 const { Meta } = Card;
 
@@ -17,13 +18,15 @@ const Dashboard = () => {
   const [artist, setArtist] = useState("");
   const [avUrl, setAvUrl] = useState("");
   const [lights, setLights] = useState([]);
+  const [trackFeatures, setTrackFeatures] = useState({});
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const getTest = async () => {
     const allData = await get("/me/player/currently-playing?market=ES");
     if (allData) {
+      setIsPlaying(allData.is_playing);
       if (imgUrl !== allData?.item.album.images[0].url) {
         setImgUrl(allData.item.album.images[0].url);
-
         setTrackUrl(allData.item.uri);
         getTrackInfo(allData.item.id);
       }
@@ -37,9 +40,21 @@ const Dashboard = () => {
     const trackData = await get(`/tracks/${id}`);
     if (trackData && trackData?.name !== trackName) {
       setTrackName(trackData.name);
+
       getArtistInfo(trackData.artists[0].id);
+
+      getTrackFeatures(id);
     }
     return trackData;
+  };
+
+  const getTrackFeatures = async (id) => {
+    const features = await get(`/audio-features/${id}`);
+    if (features) {
+      const { tempo, mode, valence } = features;
+      console.log(features);
+      setTrackFeatures({ bpm: tempo, isMajor: mode, valence: valence });
+    }
   };
   const getArtistInfo = async (id) => {
     const artistData = await get(`/artists/${id}`);
@@ -74,16 +89,37 @@ const Dashboard = () => {
   };
 
   //TODO
+  //for testing only!
   const lightEffect = async () => {
+    const { bpm } = trackFeatures;
+    const period = 120 / bpm;
+    const cycles = (bpm / 60) * 1.5;
     const d = {
-      color: "#ff0000",
-      period: 0.5,
-      cycles: 5,
-      persist: true,
+      color: data.lightVibrant,
+      from_color: data.darkVibrant,
+      period: period,
+      cycles: cycles,
+      persist: false,
       power_on: false,
-      peak: 1,
+      peak: 0.3,
+      fast: true,
     };
-    await post_lifx("/all/effects/breathe", d);
+    const f = {
+      power_on: true,
+      fast: true,
+    };
+    const l = {
+      period: 5,
+      palette: ["blue", "red"],
+      power_on: true,
+      fast: true,
+    };
+    // await post_lifx("/all/effects/move", f);
+    console.log(isPlaying);
+    if (isPlaying) {
+      await post_lifx("/all/effects/pulse", d);
+    }
+    // await post_lifx("/all/effects/morph", l);
   };
   const toggle = async (id) => {
     await post_lifx(`/id:${id}/toggle`);
@@ -93,13 +129,13 @@ const Dashboard = () => {
     const interval = setInterval(() => {
       lightEffect();
       getTest();
-      getLights();
-    }, 2500);
+      // getLights();
+    }, 3000);
 
     return () => clearInterval(interval);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackName]);
+  }, [trackName, trackFeatures, isPlaying]);
 
   useEffect(() => {
     getTest();

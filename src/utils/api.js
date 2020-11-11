@@ -74,11 +74,11 @@ export const post_lifx = async (urlExt, bodyData) => {
     body: JSON.stringify(bodyData),
   });
 
-  const data = await result;
+  // const data = await result;
   //   console.log(data.status);
 
-  const d = data.json();
-  return d;
+  // const d = data.json();
+  // return d;
 };
 
 export const getTokens = async (code) => {
