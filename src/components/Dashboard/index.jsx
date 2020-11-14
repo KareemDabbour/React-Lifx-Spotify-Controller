@@ -50,7 +50,7 @@ const Dashboard = () => {
     if (features) {
       const { tempo, mode, valence } = features;
       // console.log(features);
-      localStorage.setItem("bpm", JSON.stringify(tempo));
+      sessionStorage.setItem("bpm", tempo);
       setTrackFeatures({ bpm: tempo, isMajor: mode, valence: valence });
     }
   };
@@ -95,6 +95,7 @@ const Dashboard = () => {
 
     const period = bpm > 150 ? 120 / bpm : 60 / bpm;
     const cycles = bpm > 150 ? (bpm / 60) * 3 : (bpm / 60) * 6;
+
     const d = {
       color: data.lightVibrant,
       from_color: data.darkVibrant,
@@ -102,7 +103,7 @@ const Dashboard = () => {
       cycles: cycles,
       persist: false,
       power_on: false,
-      peak: 0.2,
+      peak: 0.5,
       fast: true,
     };
     if (isPlaying) {
