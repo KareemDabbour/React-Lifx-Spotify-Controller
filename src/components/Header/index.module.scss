@@ -4,9 +4,15 @@
   flex-wrap: wrap;
   align-items: center;
   background-color: black;
-  //   align-items: center;
+  // align-items: center;
   justify-content: center;
   .title {
     color: white;
+  }
+  .Comment {
+    // display: flex;
+    // justify-content: flex-end;
+    margin-left: auto;
+    padding: 5px;
   }
 }

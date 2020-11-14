@@ -14,23 +14,25 @@ const Header = ({ userImg, userName, userUrl }) => {
               <label className={styles.title}>Lifx Spotify Controller</label>
             }
           />
-          <Comment
-            avatar={
-              <div
-                onClick={() => {
-                  window.open(userUrl);
-                }}
-              >
-                <Avatar src={userImg} />
-              </div>
-            }
-            author={
-              <label style={{ color: "white", alignContent: "center" }}>
-                {userName}
-              </label>
-            }
-            // style={{ }}
-          />
+          <div className={styles.Comment}>
+            <Comment
+              avatar={
+                <div
+                  onClick={() => {
+                    window.open(userUrl);
+                  }}
+                >
+                  <Avatar src={userImg} />
+                </div>
+              }
+              author={
+                <label style={{ color: "white", alignContent: "center" }}>
+                  {userName}
+                </label>
+              }
+              // style={{ }}
+            />
+          </div>
         </div>
       ) : (
         <div className={styles.Header}>
@@ -39,7 +41,9 @@ const Header = ({ userImg, userName, userUrl }) => {
               <label className={styles.title}>Lifx Spotify Controller</label>
             }
           />
-          <Comment avatar={<Avatar icon={<UserOutlined />} />} />
+          <div className={styles.Comment}>
+            <Comment avatar={<Avatar icon={<UserOutlined />} />} />
+          </div>
         </div>
       )}
     </div> //

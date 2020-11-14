@@ -6,7 +6,6 @@ import { Card, Avatar } from "antd";
 import { usePalette } from "react-palette";
 import styles from "./index.module.scss";
 import "antd/dist/antd.css";
-import { flatMap } from "lodash";
 
 const { Meta } = Card;
 
@@ -21,7 +20,7 @@ const Dashboard = () => {
   const [trackFeatures, setTrackFeatures] = useState({});
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const getTest = async () => {
+  const getSpotifySongData = async () => {
     const allData = await get("/me/player/currently-playing?market=ES");
     if (allData) {
       setIsPlaying(allData.is_playing);
@@ -40,9 +39,7 @@ const Dashboard = () => {
     const trackData = await get(`/tracks/${id}`);
     if (trackData && trackData?.name !== trackName) {
       setTrackName(trackData.name);
-
       getArtistInfo(trackData.artists[0].id);
-
       getTrackFeatures(id);
     }
     return trackData;
@@ -52,10 +49,12 @@ const Dashboard = () => {
     const features = await get(`/audio-features/${id}`);
     if (features) {
       const { tempo, mode, valence } = features;
-      console.log(features);
+      // console.log(features);
+      localStorage.setItem("bpm", JSON.stringify(tempo));
       setTrackFeatures({ bpm: tempo, isMajor: mode, valence: valence });
     }
   };
+
   const getArtistInfo = async (id) => {
     const artistData = await get(`/artists/${id}`);
     if (artistData) {
@@ -63,6 +62,7 @@ const Dashboard = () => {
       setArtist(artistData);
     }
   };
+
   const getLights = async () => {
     const lightData = await get_lifx("/lights/all");
     const dataArr = [];
@@ -92,8 +92,9 @@ const Dashboard = () => {
   //for testing only!
   const lightEffect = async () => {
     const { bpm } = trackFeatures;
-    const period = 120 / bpm;
-    const cycles = (bpm / 60) * 1.5;
+
+    const period = bpm > 150 ? 120 / bpm : 60 / bpm;
+    const cycles = bpm > 150 ? (bpm / 60) * 3 : (bpm / 60) * 6;
     const d = {
       color: data.lightVibrant,
       from_color: data.darkVibrant,
@@ -101,24 +102,24 @@ const Dashboard = () => {
       cycles: cycles,
       persist: false,
       power_on: false,
-      peak: 0.3,
+      peak: 0.2,
       fast: true,
     };
-    const f = {
-      power_on: true,
-      fast: true,
-    };
-    const l = {
-      period: 5,
-      palette: ["blue", "red"],
-      power_on: true,
-      fast: true,
-    };
-    // await post_lifx("/all/effects/move", f);
-    console.log(isPlaying);
     if (isPlaying) {
       await post_lifx("/all/effects/pulse", d);
     }
+    // const f = {
+    //   power_on: true,
+    //   fast: true,
+    // };
+    // const l = {
+    //   period: 5,
+    //   palette: ["blue", "red"],
+    //   power_on: true,
+    //   fast: true,
+    // };
+    // await post_lifx("/all/effects/move", f);
+    // console.log(isPlaying);
     // await post_lifx("/all/effects/morph", l);
   };
   const toggle = async (id) => {
@@ -127,23 +128,31 @@ const Dashboard = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      lightEffect();
-      getTest();
-      // getLights();
-    }, 3000);
+      getSpotifySongData();
+    }, 2000);
 
     return () => clearInterval(interval);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trackName, trackFeatures, isPlaying]);
+  }, [trackName, trackFeatures, isPlaying, imgUrl]);
 
   useEffect(() => {
-    getTest();
+    const interval = setInterval(() => {
+      lightEffect();
+    }, 6000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, trackFeatures]);
+
+  useEffect(() => {
+    getSpotifySongData();
     getLights();
     getUser();
     lightEffect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  //Changing the background color of the body to the dark muted colour found with palette.js.
   document.body.style.backgroundColor = data.darkMuted;
 
   return (

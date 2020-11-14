@@ -1,4 +1,6 @@
 .Panel {
+  margin-left: 25%;
+  margin-right: 25%;
   .Card {
     display: flex;
     flex-wrap: wrap;
@@ -8,6 +10,9 @@
       align-items: center;
       justify-content: center;
       background: black;
+      // &:hover{
+
+      // }
     }
   }
 }
