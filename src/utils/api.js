@@ -15,7 +15,7 @@ export const get_lifx = async (urlExt) => {
 };
 
 export const get = async (urlExt) => {
-  const token = JSON.parse(localStorage.getItem("tokens")).access_token;
+  const token = JSON.parse(sessionStorage.getItem("tokens")).access_token;
   const result = await fetch(`https://api.spotify.com/v1${urlExt}`, {
     method: "GET",
     headers: { Authorization: "Bearer " + token },
@@ -28,11 +28,11 @@ export const get = async (urlExt) => {
       return await data.json();
     case 401:
       // When the current client access token expires, we refresh it.
-      const refresh_token = JSON.parse(localStorage.getItem("tokens"))
+      const refresh_token = JSON.parse(sessionStorage.getItem("tokens"))
         .refresh_token;
-      const ref_data = refreshToken();
+      const ref_data = await refreshToken();
       if (ref_data) {
-        localStorage.setItem(
+        sessionStorage.setItem(
           "tokens",
           JSON.stringify({
             access_token: ref_data.access_token,
@@ -64,15 +64,14 @@ export const getTokens = async (code) => {
     REACT_APP_CLIENT_SECRET,
     REACT_APP_REDIRECT_URL,
   } = process.env;
-
+  const auth = Buffer.from(
+    REACT_APP_CLIENT_ID + ":" + REACT_APP_CLIENT_SECRET,
+    "utf-8"
+  ).toString("base64");
   const result = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
-      Authorization:
-        "Basic " +
-        new Buffer(
-          REACT_APP_CLIENT_ID + ":" + REACT_APP_CLIENT_SECRET
-        ).toString("base64"),
+      Authorization: "Basic " + auth,
       "Content-Type": "application/x-www-form-urlencoded",
     },
 
@@ -91,13 +90,12 @@ export const getTokens = async (code) => {
 
 export const refreshToken = async () => {
   const { REACT_APP_CLIENT_ID, REACT_APP_CLIENT_SECRET } = process.env;
-  const refresh_token = JSON.parse(localStorage.getItem("tokens"))
+  const refresh_token = JSON.parse(sessionStorage.getItem("tokens"))
     .refresh_token;
   const auth = Buffer.from(
     REACT_APP_CLIENT_ID + ":" + REACT_APP_CLIENT_SECRET,
-    "base64"
-  );
-
+    "utf-8"
+  ).toString("base64");
   const result = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
